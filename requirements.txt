@@ -1,5 +1,6 @@
 streamlit
 pandas
-gspread 
+gspread
 oauth2client
 xlsxwriter
+plotly
