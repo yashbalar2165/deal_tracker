@@ -2,33 +2,39 @@ import streamlit as st
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from datetime import datetime
+from datetime import datetime, timedelta
 import io
 import xlsxwriter
 import plotly.express as px
 from gspread.exceptions import SpreadsheetNotFound, APIError
-import datetime
-from datetime import timedelta
-today = datetime.date.today()
-default_start = today - datetime.timedelta(days=30)
+import json
+
+today = datetime.today().date()
+default_start = today - timedelta(days=30)
 default_end = today
+
 # --- Google Sheets Integration ---
 SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
-CREDS_FILE = "credentials.json"  # Path to your service account credentials JSON file
-SHEET_ID = "1cAN0KG9XqLP8UxaqBnryjLtW5r9RJxOfKMNRiZS_TTE"  # Replace with your Google Sheet ID
+SHEET_ID = "1cAN0KG9XqLP8UxaqBnryjLtW5r9RJxOfKMNRiZS_TTE"  # Keep your current sheet ID
 
 @st.cache_resource
 def get_sheets_client():
     try:
-        creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+        # Load credentials from Streamlit secrets instead of local JSON file
+        creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDS"])
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
         client = gspread.authorize(creds)
         return client
-    except FileNotFoundError:
-        st.error(f"Credentials file '{CREDS_FILE}' not found. Ensure it is in the project root.")
+    except SpreadsheetNotFound:
+        st.error(f"Spreadsheet with ID '{SHEET_ID}' not found. Ensure it exists and is shared with the Service Account.")
+        st.stop()
+    except APIError as e:
+        st.error(f"Google API error: {str(e)}")
         st.stop()
     except Exception as e:
         st.error(f"Error connecting to Google Sheets: {str(e)}")
         st.stop()
+
 
 def load_sheet(sheet_name):
     client = get_sheets_client()
