@@ -211,6 +211,7 @@ elif page == "Update Transaction":
                     try:
                         new_trans = [deal_id, received, paid, trans_date.strftime('%Y-%m-%d')]
                         append_to_sheet('Transactions', new_trans)
+                        st.cache_data.clear()
                         check_and_update_status(deal_id)
                         st.success("Transaction added successfully!")
                         st.cache_data.clear()
