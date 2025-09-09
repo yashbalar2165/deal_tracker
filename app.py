@@ -189,6 +189,7 @@ if page == "Add New Deal":
 elif page == "Update Transaction":
     st.header("Update Transaction")
     deals_df = load_deals()
+    deals_df=deals_df[deals_df['Status'] == 'Pending']
     if deals_df.empty:
         st.info("No deals available. Add a new deal first.")
     else:
